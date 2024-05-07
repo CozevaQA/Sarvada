@@ -1,5 +1,5 @@
 Contact Log 
 
-Accepts Customerids in list of strings 
-Saves Report in format customeridReport.xlsx 
-Removes banner if present 
+1.Accepts Customerids in list of strings 
+2.Saves Report in format customeridReport.xlsx 
+3.Removes banner if present 
