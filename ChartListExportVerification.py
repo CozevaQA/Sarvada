@@ -159,6 +159,7 @@ def check_chartlist_export(driver,customer_id):
     hamburger_icon="//i[text()='menu']"
     supplemental_data_link_xpath="//li[@class='chart_chase_list_type' and @data-list-type='1']//a"
     hcc_data_link_xpath="//li[@class='chart_chase_list_type' and @data-list-type='2']//a"
+    awv_data_link_xpath="//li[@class='chart_chase_list_type' and @data-list-type='3']//a"
     column_header_xpath="//th[2]"
     filter_list_xpath = "//i[text()=\"filter_list\"]"
     new_creation_date_filter_from_xpath = "//input[@name='chart_chase_uploaded_from']"
@@ -195,18 +196,29 @@ def check_chartlist_export(driver,customer_id):
     customer_id_file_dict={}
     customer_id_file_dict[customer_id]=[]
     idx=1
-    while(idx<=2):
+    while(idx<=3):
         if (idx == 1):
             xpath_to_click = supplemental_data_link_xpath
             chart_type = "Supplemental Data"
         if (idx == 2):
             xpath_to_click = hcc_data_link_xpath
             chart_type = "HCC Chart"
+        if (idx == 3):
+            xpath_to_click = awv_data_link_xpath
+            chart_type = "AWV Chart"
         driver.get(url)
         # open supplemental data chart list
         wait_to_load(driver, 300)
         action_click(driver, driver.find_element(By.XPATH, hamburger_icon))
-        action_click(driver, driver.find_element(By.XPATH, xpath_to_click))
+        try:
+            action_click(driver, driver.find_element(By.XPATH, xpath_to_click))
+        except NoSuchElementException:
+            print(f"Error : Unable to find chart_type {chart_type}")
+            stored_file_path = 0
+            print(f"Customer {customer_id} file available at {stored_file_path}")
+            customer_id_file_dict[customer_id].append(stored_file_path)
+            break
+        time_delta = 3
         while (1):
             # wait for page to load
             wait_to_load(driver, 300)
@@ -214,7 +226,7 @@ def check_chartlist_export(driver,customer_id):
             WebDriverWait(driver, timeout_for_column_headers).until(
                 EC.visibility_of_element_located((By.XPATH, column_header_xpath)))
 
-            time_delta = 3
+
 
             # Set date filter
             # Get the current date
@@ -258,11 +270,11 @@ def check_chartlist_export(driver,customer_id):
                 print(f"Optimal entries present for {time_delta} days before current date ")
                 break
             if (number_between_of_and_entries < 300):
+                time_delta = time_delta + 5
                 if(chart_type=="HCC Chart"):
                     print(f"Optimal entries present for {time_delta} days before current date ")
                     break
 
-                time_delta = time_delta + 5
             if (number_between_of_and_entries > 2500):
                 time_delta = time_delta - 1
 
@@ -273,7 +285,7 @@ def check_chartlist_export(driver,customer_id):
             action_click(driver, driver.find_element(By.XPATH, export_list_xpath))
             download_successful = True
             print("Downloaded File")
-            time.sleep(10)
+            time.sleep(30)
 
 
         except Exception as e:
@@ -285,6 +297,9 @@ def check_chartlist_export(driver,customer_id):
             stored_file_path = download_and_copy_files(customer_id, chart_type)
             print(f"Customer {customer_id} file available at {stored_file_path}")
             customer_id_file_dict[customer_id].append(stored_file_path)
+
+
+    #fix here for optum
         idx=idx+1
     return customer_id_file_dict
 ['3000', 'C:\\ChartListExports\\3000\\Supplemental Data 2024-04-18 (1).csv', '0', '0', 'C:\\VerificationReports\\']
@@ -320,7 +335,9 @@ actions.perform()
 driver.find_element(By.ID,"edit-submit").click()
 print("Logged in")
 
-customer_ids=["3000","1300","200"]
+#"3000","1300","200","4600","6800","6700","1000","3300","1850
+customer_ids=["3000","1300","200","4600","6800","6700","1000","3300","1850"]
+
 
 start_time = time.time()
 print("Execution started")
@@ -333,7 +350,7 @@ for customer_id in customer_ids:
     #print(check_chartlist_export(driver, customer_id)) ['3000', 'C:\\ChartListExports\\3000\\Supplemental Data 2024-04-18 (1).csv', '0', '0', 'C:\\VerificationReports\\']
     #parameters=check_chartlist_export(driver, customer_id)
     input_dict=check_chartlist_export(driver, customer_id)
-    ChartListExport.main_chart_list_export(int(customer_id),input_dict[customer_id][0],input_dict[customer_id][1],'0',report)
+    ChartListExport.main_chart_list_export(int(customer_id),input_dict[customer_id][0],input_dict[customer_id][1],input_dict[customer_id][2],report)
 
 
 
